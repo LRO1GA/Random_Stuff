@@ -1,0 +1,531 @@
+## python generate_folders_from_text.py Master-En-Robotica-Y-Sistemas-De-Control-Ceupe_p15-36.txt --root-dir test_out --max-level 2
+MÓDULO 1. ROBÓTICA. DISEÑO Y MODELADO DE ROBOTS
+    1. Bases y Antecedentes de la Robótica
+        1. Concepto e historia
+        2. Bases de la robótica actual
+        3. Plataformas móviles
+        4. Crecimiento esperado en la industria robótica
+        5. Límites de la robótica actual
+    2. Robótica e Inteligencia Artificial
+        1. Robótica
+        2. Inteligencia artificial
+        3. Objetivos de la inteligencia artificial
+        4. Historia de la inteligencia artificial
+        5. Lenguaje de programación: el idioma de los robots
+        6. Investigación y desarrollo en áreas de la inteligencia artificial
+        7. Robótica y la inteligencia artificial
+    3. Uso de los Robots
+        1. Introducción
+        2. Robótica y beneficios
+        3. Robótica industrial
+        4. Futuro de la robótica
+        5. Robótica y las nuevas tecnologías
+        6. Tendencias
+    4. Robótica. Evolución y Principales Conceptos
+        1. Introducción a la robótica
+        2. Contexto de la robótica industrial
+        3. Mercado actual de los brazos manipuladores
+        4. Qué se entiende por Robot Industrial
+        5. Elementos de un sistema robótico
+        6. Subsistemas de un robot
+        7. Tareas desempeñadas con robótica
+        8. Clasificación de los robots
+    5. Evolución de los Robots. Robotista
+        1. Evolución de la robótica
+        2. Futuro de la robótica
+        3. Robótica en la ingeniería e industria
+    6. Características Técnicas y Morfológicas de los robots
+        1. Componentes del brazo robot
+        2. Características y capacidades del robot
+        3. Definición de grados de libertad
+        4. Definición de capacidad de carga
+        5. Definición de velocidad de movimiento
+        6. Resolución espacial, exactitud, repetibilidad y flexibilidad
+        7. Definición de volumen de trabajo
+        8. Consideraciones sobre los sistemas de control
+        9. Morfología de los robots
+        10. Tipo de coordenadas cartesianas. Voladizo y pórtico
+        11. Tipología cilíndrica
+        12. Tipo esférico
+        13. Brazos robots universal
+    7. Sensores en Robótica
+        1. Dispositivos sensoriales
+        2. Características técnicas
+        3. Puesta en marcha de sensores
+        4. Sensores de posición no ópticos
+        5. Sensores de posición ópticos
+        6. Sensores de velocidad
+        7. Sensores de proximidad
+        8. Sensores de fuerza
+        9. Visión artificial
+    8. La Unidad Controladora
+        1. El controlador
+        2. Hardware
+        3. Métodos de control
+        4. El procesador en un controlador robótico
+        5. Ejecución a tiempo real
+    9. Elementos Terminales y Aplicaciones de Traslado. Pick and Place
+        1. Elementos y actuadores terminales de robots
+        2. Conexión entre la muñeca y la herramienta final
+        3. Utilización de robots para traslado de materiales y carga/descarga automatizada. Pick and place
+        4. Aplicaciones de traslado de materiales. Pick and place
+        5. Cogida y sujeción de piezas por vacío. Ventosas
+        6. Imanes permanentes y electroimanes
+        7. Pinzas mecánicas para agarre
+        8. Sistemas adhesivos
+        9. Sistemas fluídicos
+        10. Agarre con enganche
+
+MÓDULO 2. REDES Y BUSES DE COMUNICACIÓN INDUSTRIALES
+    1. Introducción y Funcionamiento de las Redes de Comunicación
+        1. La necesidad de las redes de comunicación industrial
+        2. Sistemas de control centralizado, distribuido e híbrido
+        3. Sistemas avanzados de organización industrial: ERP y MES
+        4. La pirámide CIM y la comunicación industrial
+        5. Las redes de control frente a las redes de datos
+        6. Buses de campo, redes LAN industriales y LAN/WAN
+        7. Arquitectura de la red de control: topología anillo, estrella y bus
+        8. Aplicación del modelo OSI a redes y buses industriales
+        9. Fundamentos de transmisión, control de acceso y direccionamiento en redes industriales
+        10. Procedimientos de seguridad en la red de comunicaciones
+        11. Introducción a los estándares RS, RS, IEC, ISOCAN, IEC, Ethernet, USB
+    2. Buses y Redes Industriales. Conceptos Iniciales
+        1. Buses de campo: aplicación y fundamentos
+        2. Evaluación de los buses industriales
+        3. Diferencias entre cableado convencional y cableado con Bus
+        4. Selección de un bus de campo
+        5. Funcionamiento y arquitectura de nodos y repetidores
+        6. Conectores normalizados
+        7. Normalización
+        8. Comunicaciones industriales aplicadas a instalaciones en Domótica e Inmótica
+        9. Buses propietarios y buses abiertos
+        10. Tendencias
+        11. Gestión de redes
+    3. Funcionamiento y Aplicación de los Principales Buses Industriales
+        1. Clasificación de los buses
+        2. AS-i (Actuator/Sensor Interface)
+        3. DeviceNet
+        4. CANopen (Control Area Network Open)
+        5. SDS (Smart Distributed System)
+        6. InterBus
+        7. WorldFIP (World Factory Instrumentation Protocol)
+        8. HART (Highway Addressable Remote Transducer)
+        9. P-Net
+        10. BITBUS
+        11. ARCNet
+        12. CONTROLNET
+        13. PROFIBUS (PROcess FIeld BUS)
+        14. FIELDBUS FOUNDATION
+        15. MODBUS
+        16. ETHERNET INDUSTRIAL
+    4. Funcionamiento y Componentes del Bus As-Interface (AS-I)
+        1. Historia del bus AS-Interface
+        2. Características del bus AS-i
+        3. Componentes del bus AS-i pasarelas…
+        4. Montaje y composición
+        5. Configuración de la red AS-Interface
+        6. Aplicación del modelo ISO/OSI albus AS-i
+        7. Conectividad y pasarelas
+        8. El esclavo y la comunicación con los sensores y actuadores (Interfaz)
+        9. Sistemas de transmisión (Interfaz)
+        10. El maestro AS-i (Interfaz)
+        11. El protocolo AS-Interface: características, codificación, acceso al medio, errores y configuración
+        12. Fases operativas del funcionamiento del bus
+    5. Funcionamiento y Componentes del Bus Profibus FMS, DP Y PA
+        1. PROFIBUS (Process Field BUS)
+        2. Introducción a Profibus
+        3. Utilización de los perfiles de PROFIBUS para DP , PA y FMS
+        4. Modelo ISO OSI para Profibus
+        5. Cable para RS-, fibra óptica y IEC -
+        6. Coordinación de datos en Profibus
+        7. Profibus DP Funciones Básicas y Configuración
+        8. Profibus FMS
+        9. Comunicación y aplicaciones del Profibus-PA
+        10. Resolución de errores con Profisafe
+        11. Aplicaciones para dispositivos especiales
+        12. Archivos GSD y número de identificación para la conexión de dispositivos
+    6. Funcionamiento y Componentes del Protocolo Can y el Bus Canopen
+        1. Fundamentos del protocolo CAN
+        2. Formato de trama en el protocolo CAN
+        3. Estudio del acceso al medio en el protocolo CAN
+        4. Sincronización
+        5. Topología
+        6. Tipología de conectores en CAN
+        7. Aplicaciones: CANopen, DeviceNet, TTCAN…
+        8. Introducción al BUS CANopen
+        9. Arquitectura simplificada de CANOpen
+        10. Uso del diccionario de objetos en CANopen
+        11. Perfiles
+        12. Gestión de la res
+        13. Estructura de CANopen: definición de SDOs y PDOs
+    7. Ethernet Industrial
+        1. Ethernet y el ámbito industrial
+        2. Las ventajas de Ethernet industrial respecto al resto
+        3. Soluciones para compatibilizar Ethernet en la industria
+        4. Evoluciones del protocolo: RETHER y ETHEREAL
+        5. Mecanismos de prioridad en Ethernet: IEEE P y configuración del switch
+        6. Componentes y esquemas
+        7. Uso de Ethernet industrial en los Buses de campo
+        8. PROFINET
+        9. EtherNet/IP
+        10. ETHERCAT
+    8. Redes Inalámbricas
+        1. Contexto de la tecnología inalámbrica en aplicaciones industriales
+        2. Sistemas Wireless
+        3. Componentes
+        4. Wireless en la industria
+        5. Tecnologías de transmisión
+        6. Tipologías de Wireless
+        7. Parámetros de las redes inalámbricas
+        8. Antenas
+        9. Wireless Ethernet
+        10. Estándar IEEE
+        11. Elementos de seguridad en una red Wi-Fi
+
+MÓDULO 3. SISTEMAS SIEM Y DE CONTROL INDUSTRIAL PARA LA MEJORA DE LA SEGURIDAD
+    1. Introducción y Conceptos Previos
+        1. ¿Qué es un SIEM?
+        2. Evolución de los sistemas SIEM: SIM, SEM y SIEM
+        3. Arquitectura de un sistema SIEM
+    2. Capacidades de los Sistemas SIEM
+        1. Problemas a solventar
+        2. Administración de logs
+        3. Regulaciones IT
+        4. Correlación de eventos
+        5. Soluciones SIEM en el mercado
+    3. Seguridad, Auditoría y Cumplimiento en la Nube
+        1. Introducción
+        2. Gestión de riesgos en el negocio
+        3. Cuestiones legales básicas eDiscovery
+        4. Las auditorías de seguridad y calidad en Cloud Computing
+        5. El ciclo de vida de la información
+    4. Conceptos Avanzados de Cloud Computing
+        1. Interoperabilidad en la nube
+        2. Centro de procesamiento de datos y operaciones
+        3. Cifrado y gestión de claves
+        4. Gestión de identidades
+    5. Ciberseguridad en Entornos Móviles
+        1. Aplicaciones seguras en Cloud
+        2. Protección de ataques en entornos de red móvil
+        3. Plataformas de administración de la movilidad empresarial (EMM)
+        4. Redes WiFi seguras
+    6. Ciberseguridad en Sistemas de Control Industrial (IC)
+        1. Introducción
+        2. Amenazas y riesgos en los entornos IC
+        3. Mecanismo de defensa frente a ataques en entornos IC`
+
+MÓDULO 4. AUTÓMATAS PROGRAMABLES PLC
+    1. Conceptos y Equipos Utilizados en Automatización Industrial
+        1. Conceptos iniciales de automatización
+        2. Fijación de los objetivos de la automatización industrial
+        3. Grados de automatización
+        4. Clases de automatización
+        5. Equipos para la automatización industrial
+        6. Diálogo Hombre-máquina, HMI y SCADA
+    2. Clasificación de los Autómatas Programables
+        1. Introducción a las funciones de los autómatas programables PLC
+        2. Contexto evolutivo de los PLC
+        3. Uso de autómatas programables frente a la lógica cableada
+        4. Tipología de los autómatas desde el punto de vista cuantitativo y cualitativo
+        5. Definición de autómata microPLC
+        6. Instalación del PLC dentro del cuadro eléctrico
+    3. Arquitectura de los Autómatas
+        1. Funcionamiento y bloques esenciales de los autómatas programables
+        2. Elementos de programación de PLC
+        3. Descripción del ciclo de funcionamiento de un PLC
+        4. Fuente de alimentación existente en un PLC
+        5. Arquitectura de la CPU
+        6. Tipología de memorias del autómata para el almacenamiento de variables
+    4. Entrada y Salida de Datos en el PLC
+        1. Módulos de entrada y salida
+        2. Entrada digitales
+        3. Entrada analógicas
+        4. Salidas del PLC a relé
+        5. Salidas del PLC a transistores
+        6. Salidas del PLC a Triac
+        7. Salidas analógicas
+        8. Uso de instrumentación para el diagnóstico y comprobación de señales
+        9. Normalización y escalado de entradas analógicas en el PLC
+    5. Descripción del Ciclo de Funcionamiento del Autómata
+        1. Secuencias de operaciones del autómata programable: Watchdog
+        2. Modos de operación del PLC
+        3. Ciclo de funcionamiento del autómata programable
+        4. Chequeos del sistema
+        5. Tiempo de ejecución del programa
+        6. Elementos de proceso rápido
+    6. Configuración del PLC
+        1. Configuración del PLC
+        2. Tipos de procesadores
+        3. Procesadores centrales y periféricos
+        4. Unidades de control redundantes
+        5. Configuraciones centralizadas y distribuidas
+        6. Comunicaciones industriales y módulos de comunicaciones
+        7. Memoria masa
+        8. Periféricos
+    7. Álgebra de Boole y Uso de Elementos Especiales de Programación
+        1. Introducción a la programación
+        2. Programación estructurada
+        3. Lenguajes gráficos y la norma IEC
+        4. Álgebra de Boole: postulados y teoremas
+        5. Uso de Temporizadores
+        6. Ejemplos de uso de contadores
+        7. Ejemplos de uso de comparadores
+        8. Función SET-RESET (RS)
+        9. Ejemplos de uso del Teleruptor
+        10. Elemento de flanco positivo y negativo
+        11. Ejemplos de uso de Operadores aritméticos
+    8. Programación Mediante Diagrama de Contactos: LD
+        1. Lenguaje en esquemas de contacto LD
+        2. Reglas del lenguaje en diagrama de contactos
+        3. Elementos de entrada y salida del lenguaje
+        4. Elementos de ruptura de la secuencia de ejecución
+        5. Ejemplo con diagrama de contactos: accionamiento de Motores-bomba
+        6. Ejemplo con diagrama de contactos: estampadora semiautomática
+    9. Programación Mediante Lenguaje de Funciones Lógicas: FBD
+        1. Introducción a las funciones y puertas lógicas
+        2. Funcionamiento del lenguaje en lista de instrucciones
+        3. Aplicación de funciones FBD
+        4. Ejemplo con Lenguaje de Funciones: taladro semiautomático
+        5. Ejemplo con Lenguaje de Funciones: taladro semiautomático
+    10. Programación Mediante Lenguaje en Lista de Instrucciones IL y Texto Estructurado ST
+        1. Lenguaje en lista de instrucciones
+        2. Estructura de una instrucción de mando Ejemplos
+        3. Ejemplos de instrucciones de mando para diferentes marcas de PLC
+        4. Instrucciones en lista de instrucciones IL
+        5. Lenguaje de programación por texto estructurado ST
+    11. Programación Mediante Grafcet
+        1. Presentación de la herramienta o lenguaje GRAFCET
+        2. Principios Básicos de GRAFCET
+        3. Definición y uso de las etapas
+        4. Acciones asociadas a etapas
+        5. Condición de transición
+        6. Reglas de Evolución del GRAFCET
+        7. Implementación del GRAFCET
+        8. Necesidad del pulso inicial
+        9. Elección condicional entre secuencias
+        10. Subprocesos alternativos Bifurcación en O
+        11. Secuencias simultáneas
+        12. Utilización del salto condicional
+        13. Macroetapas en GRAFCET
+        14. El programa de usuario
+        15. Ejemplo resuelto con GRAFCET: activación de semáforo
+        16. Ejemplo resuelto con GRAFCET: control de puente grúa
+    12. Resolución de Ejemplos de Programación de PLC´S
+        1. Secuencia de LED
+        2. Alarma sonora
+        3. Control de ascensor con dos pisos
+        4. Control de depósito
+        5. Control de un semáforo
+        6. Cintas transportadoras
+        7. Control de un Parking
+        8. Automatización de puerta Corredera
+        9. Automatización de proceso de elaboración de curtidos
+        10. Programación de escalera automática
+        11. Automatización de apiladora de cajas
+        12. Control de movimiento vaivén de móvil
+        13. Control preciso de pesaje de producto
+        14. Automatización de clasificadora de paquetes
+
+MÓDULO 5. SISTEMAS HMI Y SCADA EN PROCESOS INDUSTRIALES
+    1. Fundamentos de Sistemas de control y Supervisión de Procesos: SCADA y HMI
+        1. Contexto evolutivo de los sistemas de visualización
+        2. Sistemas avanzados de organización industrial: ERP y MES
+        3. Consideraciones previas de supervisión y control
+        4. El concepto de “tiempo real” en un SCADA
+        5. Conceptos relacionados con SCADA
+        6. Definición y características del sistema de control distribuido
+        7. Sistemas SCADA frente a DCS
+        8. Viabilidad técnico-económica de un sistema SCADA
+        9. Mercado actual de desarrolladores SCADA
+        10. PC industriales y tarjetas de expansión
+        11. Pantallas de operador HMI
+        12. Características de una pantalla HMI
+        13. Software para programación de pantallas HMI
+        14. Dispositivos tablet PC
+    2. El Hardware del Scada: MTU, RTU Y Comunicaciones
+        1. Principio de funcionamiento general de un sistema SCADA
+        2. Subsistemas que componen un sistema de supervisión y mando
+        3. Componentes de una RTU, funcionamiento y características
+        4. Sistemas de telemetría: genéricos, dedicados y multiplexores
+        5. Software de control de una RTU y comunicaciones
+        6. Tipos de capacidades de una RTU
+        7. Interrogación, informes por excepción y transmisiones iniciadas por RTU\‘s
+        8. Detección de fallos de comunicaciones
+        9. Fases de implantación de un SCADA en una instalación
+    3. El Software SCADA y Comunicación OPC UA
+        1. Fundamentos de programación orientada a objetos
+        2. Driver, utilidades de desarrollo y Run-time
+        3. Las utilidades de desarrollo y el programa Run-time
+        4. Utilización de bases de datos para almacenamiento
+        5. Métodos de comunicación entre aplicaciones: OPC, ODBC, ASCII, SQL y API
+        6. La evolución del protocolo OPC a OPC UA (Unified Architecture)
+        7. Configuración de controles OPC en el SCADA
+    4. Planos y Croquis de Implantación
+        1. Símbolos y diagramas
+        2. Identificación de instrumentos y funciones
+        3. Simbología empleada en el control de procesos
+        4. Diseño de planos de implantación y distribución
+        5. Tipología de símbolos
+        6. Ejemplos de esquemas
+    5. Diseño de la Interfaz con Estándares
+        1. Fundamentos iniciales del diseño de un sistema automatizado
+        2. Presentación de algunos estándares y guías metodológicas
+        3. Diseño industrial
+        4. Diseño de los elementos de mando e indicación
+        5. Colores en los órganos de servicio
+        6. Localización y uso de elementos de mando
+    6. GEMMA: Guía de los Modos de Marcha y Parada en un Automatismo
+        1. Origen de la guía GEMMA
+        2. Fundamentos de GEMMA
+        3. Rectángulos-estado: procedimientos de funcionamiento, parada o defecto
+        4. Metodología de uso de GEMMA
+        5. Selección de los modos de marcha y de paro
+        6. Implementación de GEMMA a GRAFCET
+        7. Método por enriquecimiento del GRAFCET de base
+        8. Método por descomposición por TAREAS: coordinación vertical o jerarquizada
+        9. Tratamiento de alarmas con GEMMA
+    7. Módulos de Desarrollo
+        1. Paquetes software comunes
+        2. Módulo de configuración
+        3. Herramientas de interfaz gráfica del operador
+        4. Utilidades para control de proceso
+        5. Representación de Trending
+        6. Herramientas de gestión de alarmas y eventos
+        7. Registro y archivado de eventos y alarmas
+        8. Herramientas para creación de informes
+        9. Herramienta de creación de recetas
+        10. Configuración de comunicaciones
+    8. Diseño de la Interfaz en HMI y SCADA
+        1. Criterios iniciales para el diseño
+        2. Arquitectura
+        3. Consideraciones en la distribución de las pantallas
+        4. Elección de la navegación por pantallas
+        5. Uso apropiado del color
+        6. Correcta utilización de la Información textual
+        7. Adecuada definición de equipos, estados y eventos de proceso
+        8. Uso de la información y valores de proceso
+        9. Tablas y gráficos de tendencias
+        10. Comandos e ingreso de datos
+        11. Correcta implementación de Alarmas
+        12. Evaluación de diseños SCADA
+
+MÓDULO 6. ROBÓTICA. APLICACIONES
+    1. Robótica Móvil y Humanoide
+        1. Introducción
+        2. Historia de la robótica
+        3. Robótica Móvil
+        4. Robótica Humanoide
+    2. Robótica y Automatización en la Construcción
+        1. Introducción
+        2. Estado del arte en las construcciones robóticas
+        3. Software y tecnología IT en construcción robótica
+        4. El futuro de la robótica y la automatización en la construcción
+    3. Robots Espaciales
+        1. ¿Qué es la robótica espacial?
+        2. Problemas en la robótica espacial
+        3. Principales áreas de investigación
+    4. Sistemas Inteligentes de Transporte
+        1. ¿Qué son los Sistemas Inteligentes de Transporte?
+        2. Tecnologías relacionadas
+        3. Aplicaciones
+        4. Tecnologías de transporte inteligente
+    5. Vehículos Aéreos no Tripulados. Drones
+        1. Conocimiento de la aeronave (genérico)
+        2. Clasificación de los RPAs
+        3. Aeronavegabilidad
+        4. Registro
+        5. Célula de las aeronaves
+        6. Grupo motopropulsor
+        7. Equipos de a bordo
+        8. Sistema de control de la aeronave
+        9. Instrumentos de la estación de control
+        10. Sistemas de seguridad
+    6. Planificación de Tareas y Movimientos de Robots
+        1. Introducción
+        2. Conceptos
+        3. Algoritmos
+    7. Robots Autónomos Inteligentes
+        1. Introducción
+        2. Tareas que puede realizar autónomamente
+        3. Problemas en robótica autónoma
+    8. Robots Personales y Asistenciales
+        1. Introducción
+        2. Historia
+        3. Robots Domésticos en Ciencia Ficción
+        4. Robots personales en la actualidad
+        5. Mercado
+
+MÓDULO 7. INTELIGENCIA ARTIFICIAL PARA EMPRESAS
+    1. Introducción a la Inteligencia Artificial
+        1. Introducción a la inteligencia artificial
+        2. Historia
+        3. La importancia de la IA
+    2. Algoritmos Aplicados a la Inteligencia Artificial
+        1. Algoritmos aplicados a la inteligencia artificial
+    3. Sistemas Expertos
+        1. Sistemas expertos
+        2. Estructura de un sistema experto
+        3. Fases de construcción de un sistema
+        4. Rendimiento y mejoras
+        5. Dominios de aplicación
+        6. Creación de un sistema experto en C#
+        7. Añadir incertidumbre y probabilidades
+    4. Introducción al Machine Learning
+        1. Machine Learning
+        2. Clasificación de algoritmos de aprendizaje automático
+        3. Ejemplos de aprendizaje automático
+        4. Diferencias entre el aprendizaje automático y el aprendizaje profundo
+        5. Tipos de algoritmos de aprendizaje automático
+        6. El futuro del aprendizaje automático
+    5. Extracción de Estructura de los Datos: Clustering
+        1. Introducción
+        2. Algoritmos
+    6. Sistemas de Recomendación
+        1. Introducción
+        2. Filtrado colaborativo
+        3. Clusterización
+        4. Sistemas de recomendación híbridos
+    7. Clasificación
+        1. Clasificadores
+        2. Algoritmos
+    8. Redes Neuronales y Deep Learning
+        1. Componentes
+        2. Aprendizaje
+    9. Sistemas de Elección
+        1. Introducción
+        2. El proceso de paso de DSS a IDSS
+        3. Casos de aplicación
+
+MÓDULO 8. DISEÑO E IMPRESIÓN 3D APLICADA A LA ROBÓTICA
+    1. Introducción a la Impresión 3D
+        1. Concepto de impresión 3D
+        2. Origen, desarrollo y actualidad de la impresión 3D
+        3. Aplicaciones de la impresión 3D
+    2. Tecnología de la Impresión 3D
+        1. Tecnologías de impresión 3D
+        2. Estructura general de una impresora 3D
+        3. Materiales termoplásticos para impresión 3D
+        4. Impresión con tecnología FFF
+    3. Proceso de Fabricación de un Objeto
+        1. Influencia del diseño e impresión en la fabricación
+        2. Trabajos previos a la fabricación
+        3. Calidad y terminación de la pieza
+    4. Proceso de Impresión
+        1. Elección de material
+        2. Subida de archivos
+        3. Detección y corrección de fallos
+        4. Ajuste de espesores y escala
+        5. Análisis de acabados finales
+    5. Montaje y Utilización de una Impresora 3D
+        1. Componentes de una impresora 3D
+        2. Montaje de una impresora 3D
+        3. Utilización básica de una impresora
+        4. Operaciones de calibración y mantenimiento
+    6. Robótica y Fabricación Digital
+        1. Robótica
+        2. Fabricación digital
+    7. Uso de la Impresión 3D en Diferentes Sectores
+        1. Sector del arte y del diseño
+        2. Medicina y salud
+        3. Arquitectura
+        4. Industria
