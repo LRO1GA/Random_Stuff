@@ -1,3 +1,11 @@
+# Project Specific files
+*.hex
+*.map
+*.xlsx
+*.appl.zip
+Signed_*.zip
+*Release_Documentation*.xlsm
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
