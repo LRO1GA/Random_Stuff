@@ -1,4 +1,4 @@
-# generate_folders_from_text.py
+cd# generate_folders_from_text.py
 
 Creates a folder structure from an indented text file.
 
