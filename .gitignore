@@ -3,8 +3,9 @@
 *.map
 *.xlsx
 *.appl.zip
-Signed_*.zip
+Signed*.zip
 *Release_Documentation*.xlsm
+Master-En-Robotica-Y-Sistemas-De-Control-Ceupe.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
