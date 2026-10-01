@@ -10,6 +10,9 @@ set /p TARGET_DIR=Please Enter the local path to your SW or Repository Workspace
 echo Preparing: %TARGET_DIR%
 echo.
 
+::List of folders to always be deleted
+set "EXCLUDE_FOLDERS=tst stubs stub doc sim tmp"
+
 echo =========================================================================
 echo                       OSS Helper GUI
 echo =========================================================================
@@ -17,8 +20,8 @@ echo Target: "%TARGET_DIR%"
 echo =========================================================================
 echo [1] Full Processing
 echo [2] Start from Step 2  (Delete non .c/.h files)
-echo [3] Start from Step 2.5 (Delete folders %EXCLUDE_FOLDERS%)
-echo [4] Start from Step 3  (Delete Empty folders)
+echo [3] Start from Step 3  (Delete folders %EXCLUDE_FOLDERS%)
+echo [4] Start from Step 4  (Delete Empty folders)
 echo [5] Cancel
 echo =========================================================================
 choice /c 12345 /m "Choose an option:"
@@ -27,11 +30,8 @@ set "START_STEP=%errorlevel%"
 
 if %START_STEP% equ 5 goto :cancel_operation
 
-::List of folders to always be deleted
-set "EXCLUDE_FOLDERS=tst stubs stub doc sim"
-
-:: Fetch date and time in secure format (AAAA-MM-DD_HHMMSS)
-for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value') do set "dt=%%I"
+:: Fetch date and time in secure format (AAAA-MM-DD_HHMMSS) - wmic is removed on newer Windows, use PowerShell instead
+for /f "delims=" %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMddHHmmss"') do set "dt=%%I"
 set "YYYY=%dt:~0,4%"
 set "MM=%dt:~4,2%"
 set "DD=%dt:~6,2%"
@@ -47,7 +47,7 @@ set "TEMP_REPORT=%TEMP%\%REPORT_NAME%"
 :: System Protection Checks
 :: =========================================================================
 :: Error - Empty target directory
-set "TARGET_DIR=%TARGET_DIR: ="%"
+set "TARGET_DIR=%TARGET_DIR:"=%"
 if "%TARGET_DIR%"=="" (
     echo [ERROR] Path TARGET_DIR is empty. Please enter a valid path.
     goto :cancel_operation
@@ -84,10 +84,28 @@ if /i "%TARGET_DIR%"=="%SystemDrive%\Users" goto :protected_sys
 :: .bat source directory
 set "SCRIPT_DIR=%~dp0"
 
-:: Evaluación del salto según el menú
-if %START_STEP% equ 2 goto :paso2
-if %START_STEP% equ 3 goto :paso2_5
-if %START_STEP% equ 4 goto :paso3
+:: Map a free drive letter to TARGET_DIR so deeply nested paths stay under the 260-char MAX_PATH limit
+set "ORIGINAL_TARGET_DIR=%TARGET_DIR%"
+set "SUBST_DRIVE="
+for %%L in (Z Y X W V U T S R Q P O N M) do (
+    if not defined SUBST_DRIVE if not exist "%%L:\" (
+        subst %%L: "%TARGET_DIR%" >nul 2>&1
+        if not errorlevel 1 set "SUBST_DRIVE=%%L:"
+    )
+)
+
+if defined SUBST_DRIVE (
+    echo Mapped "%TARGET_DIR%" to %SUBST_DRIVE% to avoid long-path errors.
+    set "TARGET_DIR=%SUBST_DRIVE%"
+) else (
+    echo [WARNING] Could not map a free drive letter. Continuing with the full path - long path errors may still occur.
+)
+echo.
+
+:: Jump to the selected step
+if %START_STEP% equ 2 goto :step2
+if %START_STEP% equ 3 goto :step3
+if %START_STEP% equ 4 goto :step4
 
 :: === File count at the beginning ===
 echo Calculating total files...
@@ -96,7 +114,7 @@ for /f %%A in ('dir "%TARGET_DIR%" /b /s /a-d 2^>nul ^| find /c /v ""') do set "
 echo TOTAL FILES: %INITIAL_COUNT%
 echo.
 
-:paso2
+:step2
 :: 2. Erasing anything that's not .C or .H
 set "LAST_DIR="
 echo Deleting files...
@@ -116,7 +134,7 @@ for /r "%TARGET_DIR%" %%F in (*) do (
         set "RELATIVE_DIR=!RELATIVE_DIR:\\=\!"
         
         if "!RELATIVE_DIR!"=="" (
-            echo Currenly in Root folder...
+            echo Currently in Root folder...
         ) else (
             echo Analyzing: .!RELATIVE_DIR!
         )
@@ -128,11 +146,11 @@ for /r "%TARGET_DIR%" %%F in (*) do (
     )
 
 )
-::Erase the termninal for the next step
+::Erase the terminal for the next step
 cls
 
-:paso2_5
-:: 2.5. Removing unnecessary folders
+:step3
+:: 3. Removing unnecessary folders
 echo.
 echo Removing unnecessary folders ...
 for /d /r "%TARGET_DIR%" %%D in (%EXCLUDE_FOLDERS%) do (
@@ -146,8 +164,8 @@ for /d /r "%TARGET_DIR%" %%D in (%EXCLUDE_FOLDERS%) do (
     )
 )
 
-:paso3
-:: 3. Erase remaining empty folders
+:step4
+:: 4. Erase remaining empty folders
 echo Deleting remaining empty folders...
 set "LAST_EMPTY_DIR="
 
@@ -163,7 +181,7 @@ for /f "delims=" %%d in ('dir /ad /b /s "%TARGET_DIR%" 2^>nul') do (
             set "LAST_EMPTY_DIR=!CURRENT_EMPTY_DIR!"
             
             set "CLEAN_DIR=!CURRENT_EMPTY_DIR!"
-            if "!CLEAN_DIR:~-1%"=="\" set "CLEAN_DIR=!CLEAN_DIR:~0,-1%"
+            if "!CLEAN_DIR:~-1!"=="\" set "CLEAN_DIR=!CLEAN_DIR:~0,-1!"
             set "RELATIVE_DIR=!CLEAN_DIR:%TARGET_DIR%=\!"
             set "RELATIVE_DIR=!RELATIVE_DIR:\\=\!"
             
@@ -178,11 +196,14 @@ for /f "delims=" %%d in ('dir /ad /b /s "%TARGET_DIR%" 2^>nul') do (
 		set "FOUND_EMPTY=1"
 	)
 )
-::Erase the termninal for the next step
-cls
+
 :: Go back to the loop if there is still an empty folder
 if "!FOUND_EMPTY!"=="1" goto loop
 
+::Erase the termninal for the next step
+cls
+
+:: 5. Report Generation
 :: === File count at the end ===
 echo.
 echo Calculating remaining files...
@@ -191,24 +212,26 @@ for /f %%A in ('dir "%TARGET_DIR%" /b /s /a-d 2^>nul ^| find /c /v ""') do set "
 echo TOTAL FILES (.c y .h): %FINAL_COUNT%
 timeout /t 3 >nul
 
-:: 4. Report Generation
 echo.
 echo Generating report...
 echo === File === > "%TEMP_REPORT%"
 echo Date: %date% %time% >> "%TEMP_REPORT%"
-echo Source Folder: %TARGET_DIR% >> "%TEMP_REPORT%"
+echo Source Folder: %ORIGINAL_TARGET_DIR% >> "%TEMP_REPORT%"
 echo Starting files: %INITIAL_COUNT% >> "%TEMP_REPORT%"
 echo Remaining files: %FINAL_COUNT% >> "%TEMP_REPORT%"
 echo -------------------------------------------- >> "%TEMP_REPORT%"
 echo. >> "%TEMP_REPORT%"
 timeout /t 3 >nul
 
-dir "%TARGET_DIR%" /b /s /a-d >> "%TEMP_REPORT%" 2^>nul
+dir "%TARGET_DIR%" /b /s /a-d >> "%TEMP_REPORT%" 2>nul
 
 :: 5. Moving the report
 echo.
 echo Moving the report into the scripts location...
 move /y "%TEMP_REPORT%" "%SCRIPT_DIR%%REPORT_NAME%" >nul
+
+:: Remove the temporary drive mapping now that processing is finished
+if defined SUBST_DRIVE subst %SUBST_DRIVE% /d >nul 2>&1
 
 echo Report "%REPORT_NAME%" is in: %SCRIPT_DIR%
 echo All Done!
