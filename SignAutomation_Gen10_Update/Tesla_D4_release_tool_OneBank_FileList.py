@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Jan 5 2023
-Updated on Mon Mar 4 2024
-1
-@author: MEW1PLY, RUM3PLY, BES6FH
+Updated on Mon Sep 2 2026
+@author: MEW1PLY, RUM3PLY, BES6FH 
 
 Tool to automate CRC patching and software signing process of D4 Tesla Software Releases
 Created by: Wegienka Maxwell (CC/ECE1-NA)
-Updated by: Emiliano Gonzalez (BGSW/ECC2.3)
+Updated by: LRO1GA, GLE1GA
 """
 
 import os # Command line interaction
