@@ -4,7 +4,7 @@ Python CLI for preparing Gen9 hex release packages from an application container
 
 ## Last Tool Run + Template
 
-python Gen9_Sign_release_tool_CLI.py C:\Users\LRO1GA\Documents\CSW\1_Signed_HexFiles\HAD_BL12.0.0.0_Int3\ApplContainer_BB57434_V1200_ECB_CSW_CapF021_FinAll_ECB.appl.zip --output-dir C:\Users\LRO1GA\Documents\CSW\1_Signed_HexFiles\HAD_BL12.0.0.0_Int3 --release-name Signed_ESP_HAD_BL12.0.0.0_Int3 --force
+python Gen9_Sign_release_tool_CLI.py C:\Users\LRO1GA\Documents\CSW\2_Builds\HAD_BL12.0.0.0_Int4\CSW_CapF021_FinAll_ECB\ApplContainer_BB57434_V1200_ECB_CSW_CapF021_FinAll_ECB.appl.zip --output-dir C:\Users\LRO1GA\Documents\CSW\1_Signed_HexFiles\HAD_BL12.0.0.0_Int4 --release-name Signed_ESP_HAD_BL12.0.0.0_Int4 --force
 
 python Gen9_Sign_release_tool_CLI.py <ApplContainerInput> --output-dir <OutputPath> --release-name Signed_ESP9_BLx.x.x.x_Intx --force
 
