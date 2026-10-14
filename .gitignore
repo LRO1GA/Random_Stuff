@@ -5,7 +5,13 @@
 *.appl.zip
 Signed*.zip
 *Release_Documentation*.xlsm
-Master-En-Robotica-Y-Sistemas-De-Control-Ceupe.pdf
+PDF_Parser_CLI/*/*.pdf
+AlertMapping_Fix/
+DDL_Update/input
+DDL_Update/output
+DDL_Update/work/bin
+DDL_Update/work/obj
+DDL_Update/work/publish
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

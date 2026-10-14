@@ -5,6 +5,15 @@
 This is an overview of the standalone tools in this workspace. Each tool lives in its own folder with a dedicated `README.md` containing full usage details — this file is just an index with a quick summary and a CLI example for each.
 
 
+### DDL_Update
+
+.NET console tool that builds a DDL report workbook (`<customer>_DDLReport.xlsx`) from CSV data, either from a `Gen\<build_id>\src_out\DDL` folder structure or directly from a folder in dry-run mode.
+Note: This script is initially intended to use during postbuild stage in a CSW. for local runs of the tool, you have the `--dry-run` parameters
+
+```powershell
+dotnet run -- <customer> <build_id>
+```
+
 ### Folder_Generator_Excel_CSW
 
 Generates a folder structure (plus placeholder `.md` files) from the "Key Roles Incubator - CSW" sheet of an Excel workbook. Parses the `.xlsx` directly (no `openpyxl` dependency needed).
