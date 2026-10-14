@@ -11,7 +11,7 @@ echo Preparing: %TARGET_DIR%
 echo.
 
 ::List of folders to always be deleted
-set "EXCLUDE_FOLDERS=tst stubs stub doc sim tmp"
+set "EXCLUDE_FOLDERS=tst stubs stub doc sim tmp dsmsim bauhaus bswsim"
 
 echo =========================================================================
 echo                       OSS Helper GUI
@@ -19,8 +19,8 @@ echo =========================================================================
 echo Target: "%TARGET_DIR%"
 echo =========================================================================
 echo [1] Full Processing
-echo [2] Start from Step 2  (Delete non .c/.h files)
-echo [3] Start from Step 3  (Delete folders %EXCLUDE_FOLDERS%)
+echo [2] Start from Step 2  (Delete folders %EXCLUDE_FOLDERS%)
+echo [3] Start from Step 3  (Delete non .c/.h files)
 echo [4] Start from Step 4  (Delete Empty folders)
 echo [5] Cancel
 echo =========================================================================
@@ -115,7 +115,25 @@ echo TOTAL FILES: %INITIAL_COUNT%
 echo.
 
 :step2
-:: 2. Erasing anything that's not .C or .H
+:: 2. Removing unnecessary folders
+echo.
+echo Removing unnecessary folders ...
+for /d /r "%TARGET_DIR%" %%D in (%EXCLUDE_FOLDERS%) do (
+    if exist "%%D" (
+        set "FULL_DIR=%%D"
+        set "RELATIVE_DIR=!FULL_DIR:%TARGET_DIR%=\!"
+        set "RELATIVE_DIR=!RELATIVE_DIR:\\=\!"
+        
+        echo Deleting: .!RELATIVE_DIR!
+        rd /s /q "%%D" 2>nul
+    )
+)
+
+::Erase the terminal for the next step
+cls
+
+:step3
+:: 3. Erasing anything that's not .C or .H
 set "LAST_DIR="
 echo Deleting files...
 timeout /t 3 >nul
@@ -145,23 +163,6 @@ for /r "%TARGET_DIR%" %%F in (*) do (
         del /f /q "%%F" 2>nul
     )
 
-)
-::Erase the terminal for the next step
-cls
-
-:step3
-:: 3. Removing unnecessary folders
-echo.
-echo Removing unnecessary folders ...
-for /d /r "%TARGET_DIR%" %%D in (%EXCLUDE_FOLDERS%) do (
-    if exist "%%D" (
-        set "FULL_DIR=%%D"
-        set "RELATIVE_DIR=!FULL_DIR:%TARGET_DIR%=\!"
-        set "RELATIVE_DIR=!RELATIVE_DIR:\\=\!"
-        
-        echo Deleting: .!RELATIVE_DIR!
-        rd /s /q "%%D" 2>nul
-    )
 )
 
 :step4
@@ -231,7 +232,19 @@ echo Moving the report into the scripts location...
 move /y "%TEMP_REPORT%" "%SCRIPT_DIR%%REPORT_NAME%" >nul
 
 :: Remove the temporary drive mapping now that processing is finished
-if defined SUBST_DRIVE subst %SUBST_DRIVE% /d >nul 2>&1
+if defined SUBST_DRIVE (
+    subst %SUBST_DRIVE% /d >nul 2>&1
+    if exist "%SUBST_DRIVE%\" (
+        :: Give any lingering file handles a moment to release, then retry once
+        timeout /t 2 >nul
+        subst %SUBST_DRIVE% /d >nul 2>&1
+    )
+    if exist "%SUBST_DRIVE%\" (
+        echo [WARNING] Could not remove temporary drive mapping %SUBST_DRIVE%. Run "subst %SUBST_DRIVE% /d" manually to free it.
+    ) else (
+        echo Removed temporary drive mapping %SUBST_DRIVE%.
+    )
+)
 
 echo Report "%REPORT_NAME%" is in: %SCRIPT_DIR%
 echo All Done!
