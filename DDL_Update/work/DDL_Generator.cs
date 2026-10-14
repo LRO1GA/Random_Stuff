@@ -18,31 +18,59 @@ class Program
     static void Main(string[] args)
     {
         // Establece el contexto de licencia
-        ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.NonCommercial;
+        ExcelPackage.License.SetNonCommercialOrganization("DDL Generator Internal Tool");
 
-        // Almacena los valores de los parametros
-        string customer = args[0];
-        string build_id = args[1];
+        bool dryRun = args.Length > 0 && string.Equals(args[0], "--dry-run", StringComparison.OrdinalIgnoreCase);
 
-        if (string.IsNullOrEmpty(build_id) ||
-            string.IsNullOrEmpty(customer))
+        string customer;
+        string input_path;
+        string output_file;
+
+        if (dryRun)
         {
-            Console.WriteLine("The parameters are not set correctly.");
-            System.Environment.Exit(1);
+            // --dry-run <input_folder> <customer> [output_folder]
+            if (args.Length < 3)
+            {
+                Console.WriteLine("Usage (dry run): --dry-run <input_folder> <customer> [output_folder]");
+                System.Environment.Exit(1);
+                return;
+            }
+
+            input_path = args[1];
+            customer = args[2];
+            string output_dir = args.Length > 3 ? args[3] : input_path;
+            Directory.CreateDirectory(output_dir);
+            output_file = Path.Combine(output_dir, customer + "_DryRun.xlsx");
+
+            Console.WriteLine(">>> Dry run mode: reading inputs directly from " + input_path);
+        }
+        else
+        {
+            // Almacena los valores de los parametros
+            customer = args[0];
+            string build_id = args[1];
+
+            if (string.IsNullOrEmpty(build_id) ||
+                string.IsNullOrEmpty(customer))
+            {
+                Console.WriteLine("The parameters are not set correctly.");
+                System.Environment.Exit(1);
+            }
+
+            // Find the Gen directory
+            FindGenDirectory();
+
+            string current_path = Directory.GetCurrentDirectory();
+
+            input_path = current_path + "\\Gen\\" + build_id + "\\src_out\\DDL";
+            string output_path = current_path + "\\Gen\\" + build_id + "\\out";
+            string filename = customer + "_" + build_id + ".xlsx";
+            output_file = output_path + "\\" + filename;
         }
 
-        // Find the Gen directory
-        FindGenDirectory();
-
-        string current_path = Directory.GetCurrentDirectory();
-
-        string input_path = current_path + "\\Gen\\" + build_id + "\\src_out\\DDL";
-        string output_path = current_path + "\\Gen\\" + build_id + "\\out";
-        string DTC_Vs_TCManeuver = input_path + "\\DTC_Vs_TCManeuver_Project.csv";
-        string STM_SystemReleaseTable = input_path + "\\STM_SystemReleaseTableExpand_Project.csv";
-        string DiagnosisDataList = input_path + "\\DiagnosisDataList_Project.csv";
-        string filename = customer + "_" + build_id + ".xlsx";
-        string output_file = output_path + "\\" + filename;
+        string DTC_Vs_TCManeuver = FindInputFile(input_path, "DTC_Vs_TCManeuver_Project");
+        string STM_SystemReleaseTable = FindInputFile(input_path, "STM_SystemReleaseTableExpand_Project");
+        string DiagnosisDataList = FindInputFile(input_path, "DiagnosisDataList_Project");
 
         string[] ddl_excluded = new string[6] { "FW_NAME", "IUMPR_DENGROUP", "DTC_NAME", "SFB_COUNT", "SFB_TIME", "" };
         string[] dtc_included = new string[5] { "DTC_NAME", "DTC_VALUE", "TEST_COMPLETE_MANEUVER","TEST_COMPLETE_MANEUVER_DESC", "FW_NAME"};
@@ -64,19 +92,30 @@ class Program
             Console.WriteLine("File paths set correctly.");
         }
 
-        // Establecer los indices de las columnas para filtrar en DDL y DTC
-        GetColumnIndex(DiagnosisDataList, ddl_excluded, indices_ddl_excluded);
-        GetColumnIndex(DiagnosisDataList, dtc_included, indices_dtc_included);
-        int dtc_columns_count = indices_dtc_included.Count;
-
         // Crear un nuevo archivo de Excel
         try
         {
+            if (!File.Exists(DiagnosisDataList) || !File.Exists(STM_SystemReleaseTable))
+            {
+                Console.WriteLine("Error: Required input CSV files were not found in: " + input_path);
+                System.Environment.Exit(1);
+                return;
+            }
+
             if (File.Exists(output_file))
             {
                 Console.WriteLine("Error: Output file already exists with the same name.");
                 System.Environment.Exit(1);
             }
+
+            // Projects export the CSVs with or without a leading "sep=;" directive line, which shifts where the real header row is
+            bool ddlHasSepLine = HasSepLine(DiagnosisDataList);
+            bool srtHasSepLine = HasSepLine(STM_SystemReleaseTable);
+
+            // Establecer los indices de las columnas para filtrar en DDL y DTC
+            GetColumnIndex(DiagnosisDataList, ddl_excluded, indices_ddl_excluded, ddlHasSepLine);
+            GetColumnIndex(DiagnosisDataList, dtc_included, indices_dtc_included, ddlHasSepLine);
+            int dtc_columns_count = indices_dtc_included.Count;
 
             // Crear un nuevo archivo de Excel
             FileInfo file = new FileInfo(output_file);
@@ -92,13 +131,13 @@ class Program
                 FillCover(package, customer);
 
                 // Llenar la hoja "DDL"
-                FillDDL(ddlSheet, DiagnosisDataList, indices_ddl_excluded);
+                FillDDL(ddlSheet, DiagnosisDataList, indices_ddl_excluded, ddlHasSepLine);
 
                 // Llenar la hoja "SRT"
-                FillSRT(srtSheet, STM_SystemReleaseTable);
+                FillSRT(srtSheet, STM_SystemReleaseTable, srtHasSepLine);
 
                 // Llenar la hoja "DTC"
-                FillDTC(dtcSheet, DiagnosisDataList, indices_dtc_included, dtc_columns_count);
+                FillDTC(dtcSheet, DiagnosisDataList, indices_dtc_included, dtc_columns_count, ddlHasSepLine);
 
                 // Guardar los cambios en el archivo
                 package.Save();
@@ -107,6 +146,10 @@ class Program
             Console.WriteLine("Output file created successfully: " + output_file);
         }
         // Manejo de errores
+        catch (KeyNotFoundException ex)
+        {
+            Console.WriteLine("Error: Expected column not found in the input CSV: " + ex.Message);
+        }
         catch (IOException ex)
         {
             Console.WriteLine("Error: Input/output exception occurred: " + ex.Message);
@@ -119,6 +162,29 @@ class Program
         {
             Console.WriteLine("Error: An unexpected exception occurred: " + ex.Message);
         }
+    }
+
+    // Some project exports prefix the CSV with a "sep=;" directive line before the real header row
+    static bool HasSepLine(string filePath)
+    {
+        using (var reader = new StreamReader(filePath))
+        {
+            string firstLine = reader.ReadLine();
+            return firstLine != null && firstLine.Replace("\"", "").Trim().StartsWith("sep=", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    // Tolerates duplicate-download suffixes like "DiagnosisDataList_Project (1).csv"
+    static string FindInputFile(string folder, string baseName)
+    {
+        string exact = Path.Combine(folder, baseName + ".csv");
+        if (File.Exists(exact) || !Directory.Exists(folder))
+        {
+            return exact;
+        }
+
+        string[] matches = Directory.GetFiles(folder, baseName + "*.csv");
+        return matches.Length > 0 ? matches[0] : exact;
     }
 
     static void FillCover(ExcelPackage package, string customer)
@@ -203,23 +269,24 @@ class Program
 
         Console.WriteLine("Cover sheet created.");
     }
-    static void FillDDL(ExcelWorksheet ddlSheet, string diagnosisDataList, List<int> indices_ddl_excluded)
+    static void FillDDL(ExcelWorksheet ddlSheet, string diagnosisDataList, List<int> indices_ddl_excluded, bool hasSepLine)
     {
         int rowIndex = 1;
+        int linesToSkip = hasSepLine ? 1 : 0; // Skip only the "sep=;" line, if present, so the codes header row is kept
 
         using (var reader = new StreamReader(diagnosisDataList))
         {
-            bool firstLine = true;
+            int skippedLines = 0;
 
             while (!reader.EndOfStream)
             {
                 string line = reader.ReadLine();
                 if (line != null)
                 {
-                    if (firstLine)
+                    if (skippedLines < linesToSkip)
                     {
-                        firstLine = false;
-                        continue; // Ignorar la primera línea
+                        skippedLines++;
+                        continue;
                     }
 
                     string[] values = line.Split(';'); // Separar los valores por coma (CSV)
@@ -259,23 +326,24 @@ class Program
     }
     // End FillDLL
 
-    static void FillSRT(ExcelWorksheet srtSheet, string srtDataList)
+    static void FillSRT(ExcelWorksheet srtSheet, string srtDataList, bool hasSepLine)
     {
         int rowIndex = 1;
+        int linesToSkip = hasSepLine ? 2 : 1; // Skip "sep=;" (if present) + codes header, keeping the description row as the sheet header
 
         using (var reader = new StreamReader(srtDataList))
         {
-            int firstLine = 0;
+            int skippedLines = 0;
 
             while (!reader.EndOfStream)
             {
                 string line = reader.ReadLine();
                 if (line != null)
                 {
-                    if (firstLine < 2)
+                    if (skippedLines < linesToSkip)
                     {
-                        firstLine++;
-                        continue; // Ignorar 2 lineas
+                        skippedLines++;
+                        continue;
                     }
 
                     string[] values = line.Split(';'); // Separar los valores por coma (CSV)
@@ -312,9 +380,10 @@ class Program
     }
     // End SRT
 
-    static void FillDTC(ExcelWorksheet ddlSheet, string diagnosisDataList, List<int> indices_dtc_included, int dtc_columns_count)
+    static void FillDTC(ExcelWorksheet ddlSheet, string diagnosisDataList, List<int> indices_dtc_included, int dtc_columns_count, bool hasSepLine)
     {
         int rowIndex = 1;
+        int linesToSkip = hasSepLine ? 1 : 0; // Skip only the "sep=;" line, if present, so the codes header row is kept
 
         var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
@@ -325,17 +394,17 @@ class Program
         using (var reader = new StreamReader(diagnosisDataList))
         using (var csv = new CsvReader(reader, csvConfig))
         {
-            bool firstLine = true;
+            int skippedLines = 0;
 
             while (!reader.EndOfStream)
             {
                 string line = reader.ReadLine();
                 if (line != null)
                 {
-                    if (firstLine)
+                    if (skippedLines < linesToSkip)
                     {
-                        firstLine = false;
-                        continue; // Ignorar la primera línea
+                        skippedLines++;
+                        continue;
                     }
 
                     string[] values = line.Split(';'); // Separar los valores por coma (CSV)
@@ -399,7 +468,7 @@ class Program
         // Fijar la primera fila en la parte superior para que siempre sea visible
         worksheet.View.FreezePanes(2, 1);
     }
-    static void GetColumnIndex(string archivoCSV, string[] nombresColumnas, List<int> array_indices)
+    static void GetColumnIndex(string archivoCSV, string[] nombresColumnas, List<int> array_indices, bool hasSepLine)
     {
         try
         {
@@ -407,9 +476,9 @@ class Program
             {
                 parser.TextFieldType = FieldType.Delimited;
                 parser.SetDelimiters(";");
-                // Saltar la primera línea (encabezados vacíos en Python)
-                if (!parser.EndOfData) parser.ReadFields();
-                // Obtener la segunda fila
+                // Saltar la línea "sep=;", si existe, para no confundirla con la fila de códigos
+                if (hasSepLine && !parser.EndOfData) parser.ReadFields();
+                // Obtener la fila de códigos de columna (ej. FW_NAME, DTC_NAME...)
                 string[] secondRow = parser.ReadFields();
 
                 // Crear un diccionario para almacenar nombres de columna e índices
@@ -427,9 +496,10 @@ class Program
                     {
                         array_indices.Add(indiceColumnas[nombre]);
                     }
-                    else
+                    else if (!string.IsNullOrEmpty(nombre))
                     {
-                        throw new KeyNotFoundException(nombre);
+                        // Columns like IUMPR_DENGROUP are project-specific (e.g. OBD-only) and may legitimately not exist
+                        Console.WriteLine("Warning: Column '" + nombre + "' not found in CSV header, skipping.");
                     }
                 }
             }
