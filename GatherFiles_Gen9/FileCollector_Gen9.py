@@ -1,5 +1,5 @@
 """
-PostBuild Operations - Gen folder file collector.
+File Collector Gen 9 - Gen folder file collector.
 
 Prompts for a project root path and a BB number, locates the corresponding
 GEN\\BB<number> folder, finds which of the 4 known CSW sub-folders exist,
@@ -24,6 +24,9 @@ FILE_PATTERNS = [
     "PRJ_Anamap*.txt",
     "PRJ_AnaStack*.txt",
     "ApplContainer_BB*.appl.zip",
+    "LOG_MTCFaults_BB*.prt",
+    "LOG_MTCOutput_BB*.prt",
+    "PSWASWInterface_BB*.csv",
 ]
 
 
