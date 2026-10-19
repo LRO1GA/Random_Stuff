@@ -5,6 +5,14 @@
 This is an overview of the standalone tools in this workspace. Each tool lives in its own folder with a dedicated `README.md` containing full usage details — this file is just an index with a quick summary and a CLI example for each.
 
 
+### Communications_Summary_Generator
+
+Files away manually-requested Copilot (Teams/Outlook) communications summaries as dated Weekly/Monthly/Yearly Markdown reports. Only Weekly reports need a full manual Copilot query — Monthly/Yearly reports are auto-assembled from their lower-level reports already on disk, needing just a short Global Summary "polish" prompt.
+
+```powershell
+python generate_report.py --type weekly
+```
+
 ### DDL_Update
 
 .NET console tool that builds a DDL report workbook (`<customer>_DDLReport.xlsx`) from CSV data, either from a `Gen\<build_id>\src_out\DDL` folder structure or directly from a folder in dry-run mode.
@@ -38,12 +46,28 @@ Interactive Python script that collects specific PostBuild files (`PRJ_Anamap*`,
 python GatherFiles_Gen9_v2.py
 ```
 
+### OSS_Legacy_Package_Automation
+
+Windows batch script that strips a legacy AUTOSAR-style repository down to just its `.c`/`.h` sources (removing excluded folders, non-source files, and the empty folders left behind) so it's ready for an OSS scan. Writes a `Summary_<timestamp>.txt` report of the files kept.
+
+```powershell
+Legacy_OSS_Helper.bat
+```
+
 ### PDF_Parser_CLI
 
 Extracts the text of a 1-indexed, inclusive page range from a PDF into a plain-text file using `pypdf`, with each page separated by a `----- Page N -----` header.
 
 ```powershell
 python extract_pdf_pages.py "input_test/Master-En-Robotica-Y-Sistemas-De-Control-Ceupe.pdf" 15 36
+```
+
+### Quick_Gen_Cleanup
+
+Interactive Python script that searches direct subfolders of a starting folder for a `Gen`/`GEN` folder (up to 4 sublevels deep) and deletes the ones you pick, after a confirmation prompt.
+
+```powershell
+python .\Gen_cleanup.py
 ```
 
 ### SignAutomation_Gen10_Update
