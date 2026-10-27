@@ -38,8 +38,9 @@ class savedCrc:
         return self.fileName + "," + self.crc + "\n"
 
 @dataclass
-class savedMd5:
-    fileName: str # File name the hash was computed from
+class savedCrcMd5:
+    fileName: str # File name the CRC/hash was computed from
+    crc: str # Real "App Info CRC" read from the file (None if not applicable, e.g. bootloader)
     md5: str # MD5 hash of the file contents
 
 defaultAppRangeESP = addrRange("0x30000","0x009b7f9b","0x009b7f9c")
@@ -481,20 +482,164 @@ def computeMd5(inFile: str):
     with open(inFile, "rb") as f:
         return hashlib.md5(f.read()).hexdigest()
 
-def writeMd5ReportXlsx(reportPath: str, hashRows: list):
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# IB2/Project 2 real CRC extraction - ported from FinalizeRelease_V12.xlsm's VBA macro
+# (process.bas: getGeneration/getcrc/readAtAddress/motToIntel), validated byte-exact against
+# real release examples. The CRC is baked into the firmware image at build time and is only
+# ever READ, never patched, for this chip family.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def _ib2VbInstr(s: str, substr: str, start: int = 1):
+    # Mirrors VBA's 1-based InStr(start, string, substring)
+    idx = s.find(substr, start - 1)
+    return idx + 1 if idx >= 0 else 0
+
+def _ib2VbMid(s: str, start: int, length: int = None):
+    # Mirrors VBA's 1-based Mid(string, start[, length])
+    if start < 1:
+        start = 1
+    if length is None:
+        return s[start - 1:]
+    return s[start - 1:start - 1 + length]
+
+def _ib2GetGeneration(hexText: str):
+    # Mirrors VBA's getGeneration(): identifies the hexfile's build generation from fixed markers
+    if _ib2VbInstr(hexText, ":020000040000FA") == 1 and 0 < _ib2VbInstr(hexText, ":20") < 20:
+        genId = _ib2VbInstr(hexText, ":20100000") + 2 + 9
+        generation = 1
+    else:
+        genId = 16 + 11 + 2
+        generation = 0
+    if _ib2VbMid(hexText, genId, 6) in ("52454C", "53544D"):
+        generation += 930
+    pos10 = _ib2VbInstr(hexText, ":10", 9)
+    if 0 < pos10 < 20:
+        pos = _ib2VbInstr(hexText, ":", 2 * (11 + 2 * 16)) + 9 + 24
+        val = _ib2VbMid(hexText, pos, 4)
+        if val == "804C":
+            generation = 92
+        if val == "802A":
+            generation = 91
+    return generation
+
+def _ib2MotToIntel(adr: str):
+    # Mirrors VBA's motToIntel(): reverses byte order of a hex-digit-pair string
+    result = ""
+    ln = len(adr)
+    while ln > 0:
+        result += adr[ln - 2:ln]
+        ln -= 2
+    return result
+
+# readAtAddress ignores its own "gen" parameter in the real VBA macro and instead relies on
+# the module-level "generation" global set by the caller - this quirk must be replicated exactly
+_ib2Generation = 0
+
+def _ib2ReadAtAddress(hexText: str, adr: str, length: int):
+    # Mirrors VBA's readAtAddress(): reads `length` bytes starting at the given address,
+    # locating the right extended-linear-address record/data-record pair by text search
+    if len(adr) < 8:
+        adr = adr.rjust(8, "0")
+    aSect = _ib2VbMid(adr, 1, 4)
+    if _ib2Generation in (930, 931):
+        lln = ":20"
+        div = 32
+    else:
+        lln = ":10"
+        div = 16
+    aAdr = _ib2VbMid(adr, 5, 4)
+    adC = int(aAdr, 16) // div
+    ad = adC * div
+    hexad = format(ad, "X")
+    adrSeg = hexad[-4:] if len(hexad) >= 4 else hexad
+    offset = int(aAdr, 16) - int(adrSeg, 16)
+    sectorStart = _ib2VbInstr(hexText, ":02000004" + aSect) + 9
+    valPoi = _ib2VbInstr(hexText, lln + adrSeg, sectorStart) + 9 + offset * 2
+    result = ""
+    pos = valPoi
+    for _ in range(length):
+        if ":" in _ib2VbMid(hexText, pos, 5):
+            pos = pos + 9 + 2 + 2
+        result += _ib2VbMid(hexText, pos, 2)
+        pos += 2
+    if _ib2Generation in (930, 931):
+        result = _ib2MotToIntel(result)
+    return result
+
+def _ib2GetCrc(hexText: str, generation: int):
+    # Mirrors VBA's getcrc(): follows the "CHECK structure" pointer embedded in the image
+    global _ib2Generation
+    _ib2Generation = generation
+
+    if generation == 931:
+        chkref = _ib2VbMid(hexText, _ib2VbInstr(hexText, ":201000") + 7 + 2 + 2 * 0x10, 8)
+    elif generation == 930:
+        chkref = _ib2VbMid(hexText, _ib2VbInstr(hexText, ":20") + 9 + 0x10 * 2, 8)
+    else:
+        chkref = None
+
+    if generation in (930, 931):
+        chkref = _ib2MotToIntel(chkref)
+        chkSegAddr = format(int(chkref, 16) + 2, "X").rjust(8, "0")
+        chkSegmentation = _ib2ReadAtAddress(hexText, chkSegAddr, 1)
+        longAdr = int(chkref, 16) + 0x10 - 8
+        crcAddr = format(longAdr, "X").rjust(8, "0")
+        crc = _ib2ReadAtAddress(hexText, crcAddr, 8)
+        if int(chkSegmentation, 16) == 1:
+            crc2 = int(crc[0:8], 16)
+            crc1 = int(crc[8:16], 16)
+            crc = format(crc1 ^ crc2, "X")
+        else:
+            crc = crc[8:16]
+    elif generation in (91, 92):
+        chkref = _ib2VbMid(hexText, _ib2VbInstr(hexText, ":", 2 * (11 + 3 * 16)) + 9 + 8, 8)
+        longAdr = int(chkref, 16) + 8
+        crcAddr = format(longAdr, "X").rjust(8, "0")
+        crc = _ib2ReadAtAddress(hexText, crcAddr, 8)
+    else:
+        return None
+
+    return crc.rjust(8, "0")[-8:]
+
+def computeIb2Crc(inFile: str):
     """
-    Writes a minimal .xlsx workbook (File, MD5 columns) built directly as OOXML,
-    mirroring the release report format produced by Gen9_Sign_release_tool_CLI.py.
+    Reads the real "App Info CRC" baked into an IB2/project 2 hex file at build time.
+
+    Parameters:
+        inFile: Signed hex file to read the CRC from
+
+    Returns:
+        "0xXXXXXXXX" formatted CRC string, or None if this file type carries no CRC
+        (e.g. the bootloader HexPart, which the real release documentation also leaves blank)
+    """
+
+    # newline="" preserves \r\n as 2 literal characters, matching VBA's raw-string file read
+    with open(inFile, "r", encoding="ascii", errors="ignore", newline="") as f:
+        hexText = f.read()
+
+    generation = _ib2GetGeneration(hexText)
+    if generation not in (930, 931, 91, 92):
+        return None
+
+    crc = _ib2GetCrc(hexText, generation)
+    return ("0x" + crc) if crc else None
+
+def writeCrcMd5ReportXlsx(reportPath: str, hashRows: list):
+    """
+    Writes a minimal .xlsx workbook (File, CRC, MD5 columns) built directly as OOXML,
+    mirroring the release report format produced by Gen9_Sign_release_tool_CLI.py while
+    adding the real App Info CRC alongside the MD5, similar to the official
+    Bosch_Release_Documentation_*.xlsm layout.
 
     Parameters:
         reportPath: Full path of the .xlsx file to create
-        hashRows: List of savedMd5 entries to write, one per row
+        hashRows: List of savedCrcMd5 entries to write, one per row
 
     Returns:
         N/A
     """
 
-    sheetRows = [["File", "MD5"]] + [[row.fileName, row.md5] for row in hashRows]
+    sheetRows = [["File", "CRC", "MD5"]] + [[row.fileName, row.crc or "", row.md5] for row in hashRows]
 
     def cellRef(rowIndex, columnIndex):
         return chr(ord("A") + columnIndex) + str(rowIndex)
@@ -526,44 +671,46 @@ def writeMd5ReportXlsx(reportPath: str, hashRows: list):
         archive.writestr("xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>')
         archive.writestr("xl/worksheets/sheet1.xml", sheetXml)
 
-def selectHexPartCandidate(candidates: list):
+def selectIb2Variant(candidates: list):
     """
-    Lets the operator choose which (if any) PRJ_HexPart bootloader file belongs to this
-    release. Containers can bundle several unrelated bootloader variants, so this can't
-    be reliably guessed from the filename alone.
+    Finds project 2's (IB2/Rivian) bootloader HexPart automatically based on whether the
+    release is a Legacy or Europium (Everest/Highland) project, rather than asking the
+    operator to pick blindly from a list of candidates.
 
     Parameters:
         candidates: PRJ_HexPart_*.hex file paths found in the extracted container
 
     Returns:
-        Selected file path, or None if no bootloader is part of this release
+        Selected bootloader file path, or None if this is a Legacy release (no bootloader)
     """
 
-    if not candidates:
-        return None
-
-    print("\nPRJ_HexPart (bootloader) file(s) found in this release:")
-    print("  0: None of these belong to this release")
-    for index, candidate in enumerate(candidates, start=1):
-        print(f"  {index}: {os.path.basename(candidate)}")
-
-    while True:
+    sel = 0
+    while not sel:
         try:
-            selection = int(input("Enter the number of the bootloader file to sign, or 0 for none: "))
-            if 0 <= selection <= len(candidates):
-                break
-            raise ValueError
+            sel = int(input('Enter 1 if this is a Legacy IB2 project or 2 if this is a Europium (Everest/Highland) IB2 project: '))
+            if sel not in (1, 2):
+                raise ValueError
         except ValueError:
+            sel = 0
             print("Invalid option entered!")
 
-    return candidates[selection - 1] if selection > 0 else None
+    if sel == 1:
+        # Legacy releases don't ship a bootloader HexPart at all
+        return None
+
+    # Europium releases ship exactly one bootloader HexPart, named after its chip variant
+    hexPartPath = next((c for c in candidates if "EverestBldr" in c or "HighlandBldr" in c), None)
+    if hexPartPath is None:
+        sys.exit("Europium project selected, but no HexPart containing 'EverestBldr' or 'HighlandBldr' was found")
+
+    return hexPartPath
 
 def hexOrApplCont():
     sel = 0
     while not sel:
         try: 
-            sel = int(input('Enter 1 to prepare from an ApplContainer only or 2 to prepare from PRJ_HEX from PMSE: '))
-            if sel not in (1, 2):
+            sel = int(input('Enter 1 to prepare from an ApplContainer only, 2 to prepare from PRJ_HEX from PMSE, or 3 to process a BLU Hexfile: '))
+            if sel not in (1, 2, 3):
                 raise ValueError
         except ValueError:
             sel = 0
@@ -587,6 +734,64 @@ def selectProject():
 project = selectProject()
 
 choice = hexOrApplCont()
+
+if choice == 3:
+    # BLU Hexfile: a single standalone hexfile that gets signed and then CRC-patched
+    # (same CS9/Hexview mechanism as ESP project preparation), independent of the
+    # ApplContainer/PRJ_HEX flows below.
+    print("Opening the BLU Hexfile")
+    fname = getOpenFileName("Open BLU Hexfile", ".hex", "*.hex", os.environ["temp"])
+    fname = re.sub("\0", "", fname)
+
+    workingDir = os.path.dirname(fname)
+    tempDir = workingDir + "\\temp"
+    if os.path.exists(tempDir):
+        shutil.rmtree(tempDir)
+    os.mkdir(tempDir)
+
+    bluHexPath = tempDir + "\\" + os.path.basename(fname)
+    shutil.copy(fname, bluHexPath)
+
+    print("Opening the Map File")
+    mapFname = getOpenFileName("Open Map File", ".map", "Map_*.map", os.environ["temp"])
+    mapFname = re.sub("\0", "", mapFname)
+
+    codeAddr, calAddr, paddingBytesEndAddr = fetchCodeCalAddr(mapFname)
+
+    SCpin = ""
+    while True:
+        SCpin = getpass.getpass("Please enter smart card PIN (Input not shown): ")
+        try:
+            int(SCpin)
+            break
+        except ValueError:
+            print("Invalid entry, PIN cannot contain letters")
+
+    print("Signing the BLU Hexfile...")
+    signFile(bluHexPath, SCpin)
+    signedBluHexPath = re.sub(".hex", "_S.hex", bluHexPath)
+    checkSignedFile(signedBluHexPath, tempDir)
+
+    print("Patching CRC into the signed BLU Hexfile...")
+    patchFile(signedBluHexPath, codeAddr)
+
+    # Rename to mark this as a processed BLU Hexfile rather than a regular HexPart
+    finalBluPath = re.sub("HexPart", "BLUPart", signedBluHexPath)
+    if finalBluPath != signedBluHexPath:
+        shutil.move(signedBluHexPath, finalBluPath)
+        signedBluHexPath = finalBluPath
+
+    signedDir = workingDir + "\\signed"
+    if os.path.exists(signedDir):
+        shutil.rmtree(signedDir)
+    os.mkdir(signedDir)
+    shutil.copy(signedBluHexPath, signedDir + "\\" + os.path.basename(signedBluHexPath))
+
+    if os.path.exists(tempDir):
+        shutil.rmtree(tempDir)
+
+    print("Successfully Completed")
+    sys.exit(0)
 
 if choice == 1:
     # Find AppContainer
@@ -655,9 +860,9 @@ for file in os.listdir(tempDir):
     elif file.endswith(".map"):
         mapFilePath = tempDir + "\\" + file
 
-# Project 2's bootloader candidates can't be told apart by filename alone; ask the operator
+# Project 2's bootloader HexPart (if any) is picked automatically based on Legacy/Europium
 if project == 2:
-    hexPartPath = selectHexPartCandidate(hexPartCandidates)
+    hexPartPath = selectIb2Variant(hexPartCandidates)
 
 # Declare and init the addrRanges used for the different sets of code blocks
 if project == 1:
@@ -790,8 +995,11 @@ if project == 1:
     # 5. Export the final code block (Block 0) from the merged and SIGNED hex file.
     exportCode(signedHexFilePath, codeExportAddr, signedCodeBlockFilePath)
 else: # project == 2 (IB2/Rivian): files are already fully signed, no patch/merge/export needed
-    # The CodeBlock still carries a trailing ECC/reserve section; strip it, leaving only the code block.
+    # CodeBlock, Hexfile, and HexPart all carry a trailing ECC/reserve section; strip it from each.
     removeEccBlock(signedCodeBlockFilePath)
+    removeEccBlock(signedHexFilePath)
+    if signedHexPartPath:
+        removeEccBlock(signedHexPartPath)
 
 print("Post-signing edits completed.")
 
@@ -818,17 +1026,17 @@ if project == 1:
         crcCsvFile.write(crcLine.printCsv())
 
     crcCsvFile.close()
-else: # project == 2: no CRC address exists for this chip, so an MD5 per file is used instead
+else: # project == 2 (IB2/Rivian): the CRC is a value baked into the image at build time, read it directly
     hashStackFiles = []
 
     if signedHexPartPath:
-        hashStackFiles.append(savedMd5(os.path.relpath(signedHexPartPath, tempDir), computeMd5(signedHexPartPath)))
-    hashStackFiles.append(savedMd5(os.path.relpath(signedHexFilePath, tempDir), computeMd5(signedHexFilePath)))
-    hashStackFiles.append(savedMd5(os.path.relpath(signedCodeBlockFilePath, tempDir), computeMd5(signedCodeBlockFilePath)))
+        hashStackFiles.append(savedCrcMd5(os.path.relpath(signedHexPartPath, tempDir), computeIb2Crc(signedHexPartPath), computeMd5(signedHexPartPath)))
+    hashStackFiles.append(savedCrcMd5(os.path.relpath(signedHexFilePath, tempDir), computeIb2Crc(signedHexFilePath), computeMd5(signedHexFilePath)))
+    hashStackFiles.append(savedCrcMd5(os.path.relpath(signedCodeBlockFilePath, tempDir), computeIb2Crc(signedCodeBlockFilePath), computeMd5(signedCodeBlockFilePath)))
     for cal in signedCalBlocks:
-        hashStackFiles.append(savedMd5(os.path.relpath(cal, tempDir), computeMd5(cal)))
+        hashStackFiles.append(savedCrcMd5(os.path.relpath(cal, tempDir), computeIb2Crc(cal), computeMd5(cal)))
 
-    writeMd5ReportXlsx(signedDir + "\\crcList.xlsx", hashStackFiles)
+    writeCrcMd5ReportXlsx(signedDir + "\\crcList.xlsx", hashStackFiles)
 
 print("CRC output file complete")
 

@@ -12,6 +12,7 @@ DDL_Update/output
 DDL_Update/work/bin
 DDL_Update/work/obj
 DDL_Update/work/publish
+Examples/
 PythonLookup/
 Communications_Summary_Generator/config.json
 Communications_Summary_Generator/_scratch_prompt.md
